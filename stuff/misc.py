@@ -3,6 +3,7 @@ import json
 import shutil
 from pathlib import Path
 import yaml
+import pickle
 
 def makedir(path: str) -> None:
     """
@@ -70,3 +71,14 @@ def load_dictionary(file_name: str):
     else:
         print(f"Unsupported file extension for file: {file_name}")
         return None
+    
+def save_atomic_pickle(data, filename):
+    """
+    Pickles 'data' to filename atomically
+    """
+    temp_filename=filename+".tmp"
+    if os.path.isfile(temp_filename):
+        rm(temp_filename)
+    with open(temp_filename, 'wb') as handle:
+        pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        rename(temp_filename, filename) # atomic, replaces any existing file

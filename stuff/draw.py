@@ -1,37 +1,82 @@
 import cv2
 import stuff.coord as coord
+import time
+
+def set_colour(clr, chan, default, default_alpha=255):
+    """
+    Set a cv2 colour : check number of channels is consistent
+    change a text colour to numeric
+    """
+    colours={"red":[0,0,255],
+             "orange":[0,128,255],
+             "green":[0,255,0],
+             "cyan":[255,255,0],
+             "blue":[255,0,0],
+             "yellow":[0,255,255],
+             "white":[255,255,255],
+             "black":[0,0,0]}
+    
+    alphas={"solid":255,
+            "half":128,
+            "flashing":128,
+            "transparent":64}
+
+    if clr is None:
+        clr=default
+    if isinstance(clr, str):
+        alpha=None
+        if "_" in clr:
+            alpha,clr=clr.split("_")
+        assert clr in colours, f"unknown colour {clr}"
+        clr=colours[clr]
+        if alpha in alphas and chan==4:
+            clr=[alphas[alpha]]+clr
+            # special case "flashing" make alpha
+            # change between 0-255 based on time
+            if alpha=="flashing":
+                t=int(time.time()*512) & 511
+                if t>255:
+                    t=511-t
+                clr[0]=t
+    if chan==4 and len(clr)==3:
+        clr=[default_alpha]+clr
+    assert chan==len(clr), "Bad colour size"
+    return clr
 
 def draw_line(img, start, stop, clr=None, thickness=1):
-    height, width, _ = img.shape
+    height, width, chan = img.shape
     p0=[int(coord.clip01(start[0])*width), int(coord.clip01(start[1])*height)]
     p1=[int(coord.clip01(stop[0])*width), int(coord.clip01(stop[1])*height)]
-    if clr is None:
-        clr=(255, 255, 255)
+    clr=set_colour(clr, chan, "white")
     cv2.line(img, p0, p1, clr, thickness=thickness)
 
 def draw_box(img, box, clr=None, thickness=1):
-    height, width, _ = img.shape
+    height, width, chan = img.shape
     p0=[int(coord.clip01(box[0])*width), int(coord.clip01(box[1])*height)]
     p1=[int(coord.clip01(box[2])*width), int(coord.clip01(box[3])*height)]
-    if clr is None:
-        clr=(255, 255, 255)
+    clr=set_colour(clr, chan, "white")
     cv2.rectangle(img, p0, p1, clr, thickness)
 
 def draw_circle(img, centre, radius, clr=None, thickness=1):
-    height, width, _ = img.shape
+    height, width, chan= img.shape
     p=[int(coord.clip01(centre[0])*width), int(coord.clip01(centre[1])*height)]
     r=int(radius*width+0.5)
+    clr=set_colour(clr, chan, "white")
     cv2.circle(img, p, r, clr, -1)
 
 def draw_text(img, text, xc, yc, img_bg=None,
               font=cv2.FONT_HERSHEY_SIMPLEX,
               fontScale=0.65,
-              fontColor=(128,255,255),
-              bgColor=(0,0,0),
+              fontColor=None,
+              bgColor=None,
               lineType=2,
               thickness=1
               ):
-    height, width, _ = img.shape
+    height, width, chan = img.shape
+
+    fontColor=set_colour(fontColor, chan, "white", default_alpha=128)
+    bgColor=set_colour(bgColor, chan, "black", default_alpha=64)
+
     x=(int)(xc*width)
     y=(int)(yc*height)
     text_split=text.split("\n")

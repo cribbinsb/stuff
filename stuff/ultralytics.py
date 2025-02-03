@@ -392,7 +392,7 @@ def kp_line(display, kp, pts, thickness=2):
             return
         x1=0.5*(x1+x2)
         y1=0.5*(y1+y2)
-    display.draw_line([x0,y0], [x1,y1], (128,255,0,0), thickness=thickness)
+    display.draw_line([x0,y0], [x1,y1], "half_blue", thickness=thickness)
 
 def draw_boxes(display,
                an,
@@ -406,12 +406,12 @@ def draw_boxes(display,
     for index,a in enumerate(an):
         highlight=index==highlight_index
         if alt_clr:
-            clr=(128,255,255,0)
+            clr="half_cyan"
         else:
-            clr=(128,0, 255, 0)
+            clr="half_green"
         thickness=2
         if highlight:
-            clr=(128,0,255,255)
+            clr="flashing_yellow"
             thickness=4
         display.draw_box(a["box"], clr=clr, thickness=thickness)
 
@@ -426,10 +426,10 @@ def draw_boxes(display,
             fp=a["face_points"]
             for i in range(5):
                 if fp[3*i+2]!=0:
-                    clr=(128,0,0,255)
+                    clr="half_red"
                     if i==0 or i==3: # RIGHT points
-                        clr=(128,0,255,255)
-                    display.draw_circle([fp[3*i+0], fp[3*i+1]], radius=0.002, clr=clr) 
+                        clr="half_yellow"
+                    display.draw_circle([fp[3*i+0], fp[3*i+1]], radius=0.002, clr=clr)
                 
         if "pose_points" in a or "facepose_points" in a:
             if "pose_points" in a:
